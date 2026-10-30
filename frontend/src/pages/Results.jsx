@@ -155,7 +155,8 @@ function Results() {
   return (
     <div className="page" style={{ maxWidth: 1200, margin: '0 auto', padding: 24 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700 }}>Results</h1>
+        {loading && <p role="status">결과를 불러오는 중...</p>}
+      <h1 style={{ fontSize: 24, fontWeight: 700 }}>Results</h1>
       </div>
 
       <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 16, flexWrap: 'wrap' }}>

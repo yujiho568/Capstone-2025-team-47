@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import CryptoJS from "crypto-js";
 
 function Connect() {
   // ── 상태들 ───────────────────────────────────────────────
@@ -11,6 +10,8 @@ function Connect() {
     name: 'default',
     accessKeyId: '',
     secretAccessKey: '',
+    sessionToken: '',
+    expiresAt: '',
     region: 'ap-northeast-2',
   });
   // a;ldskfjla;
@@ -20,10 +21,8 @@ function Connect() {
 
   // ── 상수들 ───────────────────────────────────────────────
   const API_BASE = '/api/v1';
-  const S3_PREFIX = 'results/realtime/';
   const regions = ['ap-northeast-2', 'ap-northeast-1', 'us-east-1', 'us-west-2', 'eu-west-1'];
 
-  let S3_BUCKET = 'ct-pipeline-bucket-myunique-123';
 
   // 토큰 가져오는 헬퍼 (프로덕션에 맞춰 교체)
   const getToken = () => localStorage.getItem('access_token');
@@ -68,6 +67,9 @@ function Connect() {
     if (!form.accessKeyId.trim()) return 'Access Key ID를 입력하세요.';
     if (!form.secretAccessKey.trim()) return 'Secret Access Key를 입력하세요.';
     if (form.accessKeyId.length < 8) return 'Access Key ID가 너무 짧습니다.';
+    if (form.sessionToken && !form.expiresAt) return '임시 자격증명의 만료 시각을 입력하세요.';
+    if (form.expiresAt && !form.sessionToken) return 'Session token을 입력하세요.';
+    if (form.expiresAt && new Date(form.expiresAt) <= new Date()) return '자격증명이 만료되었습니다.';
     if (form.secretAccessKey.length < 8) return 'Secret Access Key가 너무 짧습니다.';
     return null;
   };
@@ -93,6 +95,8 @@ function Connect() {
         body: JSON.stringify({
           accessKeyId: form.accessKeyId,
           secretAccessKey: form.secretAccessKey,
+          sessionToken: form.sessionToken || null,
+          expiresAt: form.expiresAt ? new Date(form.expiresAt).toISOString() : null,
           region: form.region,
         }),
       });
@@ -112,19 +116,12 @@ function Connect() {
           region: form.region,
           access_key_id: form.accessKeyId,     // snake_case
           secret_access_key: form.secretAccessKey,
+          session_token: form.sessionToken || null,
+          expires_at: form.expiresAt ? new Date(form.expiresAt).toISOString() : null,
         }),
       });
       data = await res.json();
       if (!res.ok) throw new Error(data?.detail || `자격증명 저장 실패 (${res.status})`);
-      const savedName = data.name;
-
-      // 기존 로직 유지: 저장된 이름에 따라 버킷 결정
-      if (savedName !== 'uebauser1') {
-        S3_BUCKET = `ct-pipeline-bucket-u${CryptoJS.MD5(savedName).toString().slice(0, 8)}`;
-        console.log(`Using S3 Bucket: ${S3_BUCKET}`);
-      }
-
-      // 3) S3 → DB 적재 (항상 회원가입 시 저장한 Root 자격증명 사용)
       setMsg({ type: 'info', text: 'S3에서 JSON 가져와 DB에 저장 중...' });
       res = await fetch(`${API_BASE}/results/${me.id}/import-s3`, {
         method: 'POST',
@@ -133,11 +130,8 @@ function Connect() {
           ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}),
         },
         body: JSON.stringify({
-          credential_name: "__USER_ROOT__", // ★ 여기만 고정: Root 사용
-          bucket: S3_BUCKET,
-          prefix: S3_PREFIX,
-          region: form.region,
-          max_files: null,
+          credential_name: form.name,
+          max_files: 100,
           dry_run: false,
         }),
       });
@@ -145,12 +139,13 @@ function Connect() {
       if (!res.ok) throw new Error(sum?.detail || `S3 적재 실패 (${res.status})`);
 
       setMsg({
-        type: 'success',
-        text: `연결 완료! 스캔:${sum.scanned}, 신규 저장:${sum.imported}, 중복:${sum.skipped_existing}, 에러:${sum.errors}\nfirst=${sum.first_key || '-'}\nlast=${sum.last_key || '-'}`,
+        type: sum.errors ? 'error' : 'success',
+        text: `마지막 동기화: ${new Date(sum.synced_at).toLocaleString()} / ${sum.errors ? '일부 실패' : '완료'}! 스캔:${sum.scanned}, 신규 저장:${sum.imported}, 중복:${sum.skipped_existing}, 에러:${sum.errors}\n다음 페이지: ${sum.continuation_token ? '있음' : '없음'}`,
       });
     } catch (e) {
       setMsg({ type: 'error', text: e.message });
     } finally {
+      setForm(prev => ({ ...prev, accessKeyId: "", secretAccessKey: "", sessionToken: "", expiresAt: "" }));
       setConnecting(false);
     }
   };
@@ -204,6 +199,17 @@ function Connect() {
                 {showSecret ? 'Hide' : 'Show'}
               </button>
             </div>
+          </div>
+
+          <div>
+            <label htmlFor="sessionToken">Session token (임시 자격증명만)</label>
+            <input id="sessionToken" name="sessionToken" type="password" autoComplete="off"
+              value={form.sessionToken} onChange={onChange} style={{ width: '100%' }} />
+          </div>
+          <div>
+            <label htmlFor="expiresAt">만료 시각 (현재 브라우저 시간대)</label>
+            <input id="expiresAt" name="expiresAt" type="datetime-local"
+              value={form.expiresAt} onChange={onChange} />
           </div>
 
           <div>

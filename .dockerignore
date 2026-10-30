@@ -1,0 +1,12 @@
+.git
+.venv*
+.demo
+.env
+__pycache__
+**/__pycache__
+frontend
+archive
+**/.terraform
+**/.build
+*.db
+*.sqlite*

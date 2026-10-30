@@ -40,49 +40,11 @@ def get_multi(
     return list(db.execute(stmt).scalars().all())
 
 
-def create(db: Session, user_id: int, obj_in: AwsCredentialCreate) -> AwsCredential:
-    cred = AwsCredential(
-        user_id=user_id,
-        name=obj_in.name,
-        region=obj_in.region,
-        is_active=obj_in.is_active,
-        access_key_id=obj_in.access_key_id,
-        secret_access_key=obj_in.secret_access_key,
-    )
-    db.add(cred)
-    try:
-        db.commit()
-    except IntegrityError as e:
-        db.rollback()
-        # 유저 내 name 유니크 제약 위반
-        raise HTTPException(status_code=409, detail="Credential name already exists")
-    db.refresh(cred)
-    return cred
+def create(*args, **kwargs):
+    raise RuntimeError("Use authenticated STS-validated encrypted credential store endpoint")
 
-
-def update(
-    db: Session, user_id: int, cred_id: int, obj_in: AwsCredentialUpdate
-) -> AwsCredential:
-    cred = get(db, user_id, cred_id)
-
-    if obj_in.name is not None:
-        cred.name = obj_in.name
-    if obj_in.region is not None:
-        cred.region = obj_in.region
-    if obj_in.is_active is not None:
-        cred.is_active = obj_in.is_active
-    if obj_in.access_key_id is not None:
-        cred.access_key_id = obj_in.access_key_id
-    if obj_in.secret_access_key is not None:
-        cred.secret_access_key = obj_in.secret_access_key
-
-    try:
-        db.commit()
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(status_code=409, detail="Credential name already exists")
-    db.refresh(cred)
-    return cred
+def update(*args, **kwargs):
+    raise RuntimeError("Credential rotation requires revalidation and encrypted registration")
 
 
 def delete(db: Session, user_id: int, cred_id: int) -> None:

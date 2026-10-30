@@ -6,8 +6,6 @@ function Register() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [awsAccessKey, setAwsAccessKey] = useState('')
-  const [awsSecretKey, setAwsSecretKey] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -21,9 +19,7 @@ function Register() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
-          password,
-          aws_access_key: awsAccessKey,
-          aws_secret_key: awsSecretKey
+          password
         })
       })
       if (!res.ok) {
@@ -31,7 +27,7 @@ function Register() {
         throw new Error(txt || 'Registration failed')
       }
       navigate('/login', { replace: true })
-    } catch (err) {
+    } catch {
       setError('회원가입 실패: 이미 존재하는 이메일인지 확인하세요')
     } finally {
       setLoading(false)
@@ -71,32 +67,6 @@ function Register() {
               required
               className="auth-input"
               placeholder="비밀번호를 입력하세요"
-            />
-          </div>
-
-          {/* AWS Access Key */}
-          <div className="auth-field">
-            <label className="auth-label">AWS Access Key</label>
-            <input
-              type="text"
-              value={awsAccessKey}
-              onChange={(e) => setAwsAccessKey(e.target.value)}
-              required
-              className="auth-input"
-              placeholder="AWS Access Key를 입력하세요"
-            />
-          </div>
-
-          {/* AWS Secret Key */}
-          <div className="auth-field">
-            <label className="auth-label">AWS Secret Key</label>
-            <input
-              type="password"
-              value={awsSecretKey}
-              onChange={(e) => setAwsSecretKey(e.target.value)}
-              required
-              className="auth-input"
-              placeholder="AWS Secret Key를 입력하세요"
             />
           </div>
 

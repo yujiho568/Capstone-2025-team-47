@@ -1,55 +1,24 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field, ConfigDict, SecretStr, field_validator
 from datetime import datetime
-from typing import Optional
 
-# ---- Base ----
-class UserBase(BaseModel):
+class UserCreate(BaseModel):
     email: EmailStr
-    is_active: Optional[bool] = True
-
-# ---- Create (request body for /register) ----
-class UserCreate(UserBase):
-    password: str
-    aws_access_key: str
-    aws_secret_key: str
-
-    class Config:
-        from_attributes = True  # pydantic v2에서도 동작 (v1은 orm_mode와 유사)
-
-# ---- Read (response for /users/me, /register) ----
-class UserRead(UserBase):
+    password: SecretStr = Field(min_length=8,max_length=72)
+    model_config=ConfigDict(extra='forbid')
+    @field_validator('password')
+    @classmethod
+    def password_bytes(cls,value):
+        if len(value.get_secret_value().encode())>72: raise ValueError('password_too_long')
+        return value
+class UserRead(BaseModel):
     id: int
+    email: EmailStr
+    is_active: bool
     created_at: datetime
-    aws_access_key: Optional[str] = None
-    aws_account_id: Optional[str] = None
-    aws_principal_arn: Optional[str] = None
-    # 보안상 aws_secret_key는 응답에 포함 X
-
-    class Config:
-        from_attributes = True
-
-# ---- Internal (DB-facing) ----
-class UserInDB(UserBase):
-    id: int
-    hashed_password: str
-    created_at: datetime
-    aws_access_key: Optional[str] = None
-    aws_secret_key: Optional[str] = None
-    aws_account_id: Optional[str] = None
-    aws_principal_arn: Optional[str] = None
-
-    class Config:
-        from_attributes = True
-
-# ---- Auth token ----
+    model_config=ConfigDict(from_attributes=True)
 class Token(BaseModel):
     access_token: str
     token_type: str
-
-class TokenData(BaseModel):
-    email: Optional[str] = None
-
-# ---- Login body ----
 class UserLogin(BaseModel):
     email: EmailStr
-    password: str
+    password: SecretStr

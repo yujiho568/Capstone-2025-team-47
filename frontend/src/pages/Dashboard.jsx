@@ -1,11 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+
+const CHART_PADDING = { top: 28, right: 24, bottom: 28, left: 44 };
 
 /** 간단한 라인차트(SVG) + 툴팁 + 임계선(50/70) */
 function LineChart({ title, series, width = 720, height = 260 }) {
   // series: [{ ts: Date|string, risk: number, eventName?: string }], 과거→현재 정렬 권장
-  const padding = { top: 28, right: 24, bottom: 28, left: 44 };
+  const padding = CHART_PADDING;
 
-  const { minY, maxY, xScale, yScale, points } = React.useMemo(() => {
+  const { minY, maxY, points } = React.useMemo(() => {
     const ys = (series || []).map(d => Number(d.risk)).filter(Number.isFinite);
     const minY = ys.length ? Math.min(...ys, 0) : 0;
     const maxY = ys.length ? Math.max(...ys, 1) : 1;
@@ -26,7 +28,7 @@ function LineChart({ title, series, width = 720, height = 260 }) {
       d,
     }));
     return { minY, maxY, xScale, yScale, points };
-  }, [series, width, height]);
+  }, [series, width, height, padding]);
 
   const fmtTs = (ts) => {
     const d = new Date(ts);
@@ -45,9 +47,6 @@ function LineChart({ title, series, width = 720, height = 260 }) {
   }, [points]);
 
   // thresholds
-  const y50 = series?.length ? points.length ? points[0].y + (yScale(50) - yScale(Number(series[0].risk))) : null : null;
-  const y70 = series?.length ? points.length ? points[0].y + (yScale(70) - yScale(Number(series[0].risk))) : null : null;
-
   // hover: x에 가장 가까운 인덱스
   const [hover, setHover] = React.useState(null); // { idx, x, y, datum }
   const onMouseMove = (e) => {
@@ -173,9 +172,9 @@ function LineChart({ title, series, width = 720, height = 260 }) {
 /** Scatter Chart (이산적 이벤트 시각화) */
 function ScatterChart({ title, series, width = 720, height = 260 }) {
   // series: [{ ts: Date|string, risk: number }, ...]  // 시간 오름차순(과거→현재) 권장
-  const padding = { top: 28, right: 24, bottom: 28, left: 44 };
+  const padding = CHART_PADDING;
 
-  const { minY, maxY, minX, maxX, xScale, yScale } = React.useMemo(() => {
+  const { minX, maxX, xScale, yScale } = React.useMemo(() => {
     const ys = (series || []).map(d => Number(d.risk)).filter(Number.isFinite);
     const minY = ys.length ? Math.min(...ys, 0) : 0;
     const maxY = ys.length ? Math.max(...ys, 1) : 1;
@@ -193,7 +192,7 @@ function ScatterChart({ title, series, width = 720, height = 260 }) {
       padding.top + plotH - ((y - minY) * plotH) / (maxY - minY || 1);
 
     return { minY, maxY, minX, maxX, xScale, yScale };
-  }, [series, width, height]);
+  }, [series, width, height, padding]);
 
   const fmtTs = (ts) => {
     const d = new Date(ts);
@@ -331,10 +330,11 @@ function Dashboard() {
   const [message, setMessage] = useState(null);  // {type:'success'|'error'|'info', text}
 
   // 기본 S3 경로 (질문에서 지정)
-  const S3_PREFIX = 'results/realtime/';
+  const [lastSync, setLastSync] = useState(null);
+  const [nextPage, setNextPage] = useState(null);
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-  const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
+  const authHeader = React.useMemo(() => token ? { Authorization: `Bearer ${token}` } : {}, [token]);
 
   // 1) 로그인 사용자
   useEffect(() => {
@@ -381,7 +381,7 @@ function Dashboard() {
     };
     loadCreds();
     // eslint-di sable-next-line react-hooks/exhaustive-deps
-  }, [me?.id]);
+  }, [me?.id, authHeader]);
 
   const fetchResults = async (credName) => {
     if (!me?.id || !credName) return;
@@ -424,6 +424,8 @@ function Dashboard() {
 
   // 선택 변경 시 DB에서 최신 100개 조회
   useEffect(() => {
+    setNextPage(null);
+    setLastSync(null);
     if (selectedCred) fetchResults(selectedCred);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCred]);
@@ -433,31 +435,24 @@ function Dashboard() {
     if (!me?.id || !selectedCred) return;
     setMessage({ type: 'info', text: 'S3에서 JSON을 가져와 DB 업데이트 중...' });
     setSyncing(true);
-    let S3_BUCKET = 'ct-pipeline-bucket-myunique-123'; // 기본값 (회원가입 시 저장한 Root 자격증명 사용)
-    if (selectedCred !== 'uebauser1') {
-      // 기존 로직 유지: 저장된 이름에 따라 버킷 결정
-      const CryptoJS = require('crypto-js');
-      S3_BUCKET = `ct-pipeline-bucket-u${CryptoJS.MD5(savedName).toString().slice(0, 8)}`;
-      console.log(`Using S3 Bucket: ${S3_BUCKET}`);
-    }
     try {
       const res = await fetch(`${API_BASE}/results/${me.id}/import-s3`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeader },
         body: JSON.stringify({
-          credential_name: "__USER_ROOT__",
-          bucket: S3_BUCKET,
-          prefix: S3_PREFIX,
-          region: creds.find(c => c.name === selectedCred)?.region || 'ap-northeast-2',
+          credential_name: selectedCred,
+          max_files: 100,
+          continuation_token: nextPage,
           dry_run: false,
-          max_files: null,
         }),
       });
       const sum = await res.json();
       if (!res.ok) throw new Error(sum?.detail || `S3 적재 실패 (${res.status})`);
+      setLastSync(sum.synced_at);
+      setNextPage(sum.continuation_token);
       setMessage({
-        type: 'success',
-        text: `동기화 완료: 스캔=${sum.scanned}, 추가=${sum.imported}, 중복=${sum.skipped_existing}, 에러=${sum.errors}`,
+        type: sum.errors ? 'error' : 'success',
+        text: `동기화 ${sum.errors ? '일부 실패' : '완료'}: 스캔=${sum.scanned}, 추가=${sum.imported}, 중복=${sum.skipped_existing}, 에러=${sum.errors}`,
       });
       // 동기화 후 그래프 재조회
       fetchResults(selectedCred);
@@ -475,6 +470,7 @@ function Dashboard() {
     <div className="page" style={{ maxWidth: 1080, margin: '0 auto', padding: 24 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 12 }}>
         <h1 style={{ fontSize: 24, fontWeight: 700 }}>Dashboard</h1>
+        <span role="status">마지막 동기화: {lastSync ? new Date(lastSync).toLocaleString() : "아직 없음"} {nextPage ? "(다음 페이지 있음)" : ""}</span>
       </div>
 
       <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 16, flexWrap: 'wrap' }}>

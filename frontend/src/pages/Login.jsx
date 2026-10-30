@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useLocation, useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '../auth/AuthContext'
+import { useAuth } from '../auth/auth.js'
 import '../styles/auth.css'
 
 function Login() {
@@ -21,7 +21,7 @@ function Login() {
     try {
       await login(email, password)
       navigate(from, { replace: true })
-    } catch (err) {
+    } catch {
       setError('로그인 실패: 이메일 또는 비밀번호를 확인하세요')
     } finally {
       setLoading(false)

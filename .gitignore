@@ -46,3 +46,12 @@ dist-ssr
 
 # history files
 .history
+.venv*/
+.demo/
+.pytest_cache/
+**/.terraform/
+*.tfstate*
+*.tfplan
+pipeline/UEBA/.build/
+pipeline/UEBA/modules/ct-pipeline/.build/
+pipeline/UEBA/modules/ct-pipeline/build/

@@ -1,0 +1,2 @@
+# Build from the repository root; use the shared runtime lock.
+-r ../../requirements.runtime.lock

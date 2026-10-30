@@ -1,22 +1,14 @@
-"""
-UEBA System Configuration Management
-환경변수 및 시스템 설정 관리
-"""
-
-from pydantic import Field
-from pydantic_settings import BaseSettings
 from functools import lru_cache
-import os
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field
 
 class Settings(BaseSettings):
-    SECRET_KEY: str = Field(default=os.environ.get("SECRET_KEY", "dev-secret-key"), env="SECRET_KEY")
-    ALGORITHM: str = Field(default="HS256", env="ALGORITHM")
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=30, env="ACCESS_TOKEN_EXPIRE_MINUTES")
-    DATABASE_URL: str = Field(default=os.environ.get("DATABASE_URL", "sqlite:///./ueba_system.db"), env="DATABASE_URL")
-
-    class Config:
-        env_file = ".env"
+    SECRET_KEY: str = Field(min_length=32)
+    FERNET_KEY: str | None = None
+    ALGORITHM: str = 'HS256'
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    DATABASE_URL: str = 'sqlite:///./ueba_system.db'
+    model_config=SettingsConfigDict(env_file='.env',extra='ignore')
 
 @lru_cache
-def get_settings():
-    return Settings() 
+def get_settings(): return Settings()

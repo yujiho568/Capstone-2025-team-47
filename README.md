@@ -1,3 +1,9 @@
+> **이번 작업 이후의 실행 안내 (2026-10-30):** 아래 본문은 기존 졸업과제 기록입니다.
+> 새 구현·기존 구현의 차이는 [개선 기록](docs/IMPROVEMENTS.md), 실행은
+> [AWS 없는 로컬 데모](docs/LOCAL_DEMO.md), 운영은 [배포 지침](docs/DEPLOYMENT.md)을 따르세요.
+> 이전 ZIP은 `archive/original/`로 옮겼고 빌드 기준은 `pipeline/`입니다.
+> 본문의 과거 `terraform destroy` 복구 절차와 ZIP 배포 절차는 새 구현에 사용하지 않습니다.
+
 ## 1. 프로젝트 배경
 
 ### 1.1. 국내외 시장 현황 및 문제점

@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
-import { Navigate, useLocation, useNavigate } from 'react-router-dom'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Navigate, useLocation } from 'react-router-dom'
 
-const AuthContext = createContext(null)
+import { AuthContext, useAuth } from './auth.js'
 
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem('access_token') || '')
@@ -20,7 +20,7 @@ export function AuthProvider({ children }) {
         if (!res.ok) throw new Error('unauthorized')
         const data = await res.json()
         if (!ignore) setUser(data)
-      } catch (_) {
+      } catch {
         if (!ignore) {
           setUser(null)
           setToken('')
@@ -68,12 +68,6 @@ export function AuthProvider({ children }) {
       {children}
     </AuthContext.Provider>
   )
-}
-
-export function useAuth() {
-  const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider')
-  return ctx
 }
 
 export function ProtectedRoute({ children }) {
