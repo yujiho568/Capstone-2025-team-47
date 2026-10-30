@@ -13,3 +13,16 @@ def test_replay_retains_original():
     event={'detail':{'eventID':'a'}}
     assert unwrap({'requestPayload':event})==[event]
     assert unwrap({'original':event,'reason':'KeyError'})==[event]
+
+def test_current_clock_latency_records_actual_stages(tmp_path):
+    from tools.measure_local_latency import measure
+    from pipeline.ueba.events import parse_time
+    path, report=measure(count=3,repetitions=1,output=tmp_path/'measurement')
+    assert report['completed_events']==3 and report['completed_repetitions']==1
+    assert report['aws_cloudtrail_measured'] is False
+    r=report['repetitions'][0]
+    assert r['matched']==3 and r['missing']==0 and r['storage_duplicates']==0
+    assert r['duplicate_replay_status']=='duplicate'
+    s=r['sample']
+    assert parse_time(s['eventTime'])<=parse_time(s['collectorReceivedAt'])<=parse_time(s['writeRequestedAt'])<=parse_time(s['storedAt'])
+    assert (path/'run-1-receipts.jsonl').exists()

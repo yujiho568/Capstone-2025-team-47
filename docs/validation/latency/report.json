@@ -1,0 +1,115 @@
+{
+  "mode": "local_moto_only",
+  "aws_cloudtrail_measured": false,
+  "aws_cloudwatch_measured": false,
+  "managed_delivery_measured": false,
+  "requested_events_per_repetition": 30,
+  "completed_repetitions": 3,
+  "warmups_per_repetition": 1,
+  "exclusions": "Resource creation and one warmup per repetition excluded. No intentional delay injected.",
+  "repetitions": [
+    {
+      "source_records": 30,
+      "receipt_records": 30,
+      "matched": 30,
+      "missing": 0,
+      "unexpected": 0,
+      "source_duplicates": 0,
+      "storage_duplicates": 0,
+      "negative_latency_count": 0,
+      "statistics": {
+        "mean_seconds": 0.0075177333333333336,
+        "median_seconds": 0.0045125,
+        "p95_seconds": 0.011203,
+        "max_seconds": 0.067044
+      },
+      "source_precision": "fractional_seconds",
+      "caveat": "Event-time precision, delivery delay and clock skew bound accuracy; not a millisecond-accuracy measurement.",
+      "run": 1,
+      "stored_rows": 30,
+      "duplicate_replay_status": "duplicate",
+      "monotonic_collector_call": {
+        "mean_seconds": 0.007528337033969971,
+        "median_seconds": 0.004522803996223956,
+        "p95_seconds": 0.011219740001251921,
+        "max_seconds": 0.06706771100289188
+      },
+      "sample": {
+        "eventID": "local-0-0-bedd236c-c2bc-4b91-ad1a-c5d0038cfb30",
+        "eventTime": "2026-10-30T12:32:05.483226Z",
+        "collectorReceivedAt": "2026-10-30T12:32:05.483230Z",
+        "writeRequestedAt": "2026-10-30T12:32:05.483244Z",
+        "storedAt": "2026-10-30T12:32:05.485664Z"
+      }
+    },
+    {
+      "source_records": 30,
+      "receipt_records": 30,
+      "matched": 30,
+      "missing": 0,
+      "unexpected": 0,
+      "source_duplicates": 0,
+      "storage_duplicates": 0,
+      "negative_latency_count": 0,
+      "statistics": {
+        "mean_seconds": 0.015116333333333334,
+        "median_seconds": 0.012150500000000002,
+        "p95_seconds": 0.016048,
+        "max_seconds": 0.091221
+      },
+      "source_precision": "fractional_seconds",
+      "caveat": "Event-time precision, delivery delay and clock skew bound accuracy; not a millisecond-accuracy measurement.",
+      "run": 2,
+      "stored_rows": 30,
+      "duplicate_replay_status": "duplicate",
+      "monotonic_collector_call": {
+        "mean_seconds": 0.015146928667187845,
+        "median_seconds": 0.012167610992037226,
+        "p95_seconds": 0.016157235993887298,
+        "max_seconds": 0.09124896800494753
+      },
+      "sample": {
+        "eventID": "local-1-0-a69fe7ca-f0e0-4a3e-8767-37d05d13f057",
+        "eventTime": "2026-10-30T12:32:05.751118Z",
+        "collectorReceivedAt": "2026-10-30T12:32:05.751125Z",
+        "writeRequestedAt": "2026-10-30T12:32:05.751137Z",
+        "storedAt": "2026-10-30T12:32:05.761742Z"
+      }
+    },
+    {
+      "source_records": 30,
+      "receipt_records": 30,
+      "matched": 30,
+      "missing": 0,
+      "unexpected": 0,
+      "source_duplicates": 0,
+      "storage_duplicates": 0,
+      "negative_latency_count": 0,
+      "statistics": {
+        "mean_seconds": 0.023426666666666665,
+        "median_seconds": 0.01795,
+        "p95_seconds": 0.051654,
+        "max_seconds": 0.114153
+      },
+      "source_precision": "fractional_seconds",
+      "caveat": "Event-time precision, delivery delay and clock skew bound accuracy; not a millisecond-accuracy measurement.",
+      "run": 3,
+      "stored_rows": 30,
+      "duplicate_replay_status": "duplicate",
+      "monotonic_collector_call": {
+        "mean_seconds": 0.02348588396756289,
+        "median_seconds": 0.01796874300634954,
+        "p95_seconds": 0.0516808809916256,
+        "max_seconds": 0.11418639399926178
+      },
+      "sample": {
+        "eventID": "local-2-0-24f425c0-b447-448a-9adc-f9c29cd4c06c",
+        "eventTime": "2026-10-30T12:32:06.267609Z",
+        "collectorReceivedAt": "2026-10-30T12:32:06.267615Z",
+        "writeRequestedAt": "2026-10-30T12:32:06.267629Z",
+        "storedAt": "2026-10-30T12:32:06.283601Z"
+      }
+    }
+  ],
+  "completed_events": 90
+}
