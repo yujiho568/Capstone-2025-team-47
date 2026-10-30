@@ -2,7 +2,7 @@ import json
 from unittest.mock import Mock
 import pytest
 from boto3.dynamodb.types import TypeSerializer
-from pipeline.ueba.events import normalize,sessions,windows,Collector,history
+from pipeline.ueba.events import normalize,sessions,windows,Collector,history,parse_time
 from pipeline.ueba.models import Bundle,ModelUnavailable,train
 from pipeline.ueba.detection import Detector
 from conftest import cloud_event
@@ -63,7 +63,8 @@ def test_result_saved_before_notification_failure_and_retry(aws,model_dir):
     # Force anomaly only to test delivery fault, not to claim model accuracy.
     bundle.predict=Mock(return_value={'engine':'ocsvm','is_anomaly':True,'score':-1.,'risk':99.})
     events=Mock();events.put_events.return_value={'FailedEntryCount':1}
-    d=Detector(t,s,'ueba-results',bundle,events)
+    d=Detector(t,s,'ueba-results',bundle,events,alert_max_age_seconds=60,
+               now=lambda:parse_time(cloud_event(19)['detail']['eventTime']))
     with pytest.raises(RuntimeError): d.process(normalize(cloud_event(19)))
     assert s.list_objects_v2(Bucket='ueba-results')['KeyCount']==1
     events.put_events.return_value={'FailedEntryCount':0}
@@ -106,3 +107,18 @@ def test_recent_history_is_bounded_without_changing_initial_flag(aws):
     assert len(rows)==41
     seq,initial=list(windows(rows))[-1]
     assert len(seq)==20 and not initial and seq[-1]['eventID']=='evt-00079'
+
+def test_historical_stream_event_cannot_emit_current_alerts(aws,model_dir):
+    from datetime import timedelta
+    from pipeline.ueba.events import parse_time
+    t,s=aws;c=Collector(t,s,'failure-archive')
+    for i in range(20): c.collect(cloud_event(i))
+    bundle=Bundle(model_dir,'v1')
+    bundle.predict=Mock(return_value={'engine':'ocsvm','is_anomaly':True,'score':-1.,'risk':99.})
+    events=Mock()
+    with pytest.raises(ValueError): Detector(t,s,'ueba-results',bundle,events)
+    d=Detector(t,s,'ueba-results',bundle,events,alert_max_age_seconds=60,
+               now=lambda:parse_time(cloud_event(19)['detail']['eventTime'])+timedelta(hours=3))
+    result=d.process(normalize(cloud_event(19)))
+    assert result['notificationStatus']=='historical_or_future_event_suppressed'
+    events.put_events.assert_not_called()

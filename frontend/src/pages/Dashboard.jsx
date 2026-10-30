@@ -415,8 +415,8 @@ function Dashboard() {
       let items1 = await res.json();
       if (!res.ok) throw new Error(items1?.detail || `results(1) 실패 (${res.status})`);
 
-      setSeries0(toSeries(items0));
-      setSeries1(toSeries(items1));
+      setSeries0(toSeries(items0.filter(r => r.analysis_kind !== "reanalysis")));
+      setSeries1(toSeries(items1.filter(r => r.analysis_kind !== "reanalysis")));
     } catch (e) {
       setDataErr(e.message);
     }
@@ -470,6 +470,7 @@ function Dashboard() {
     <div className="page" style={{ maxWidth: 1080, margin: '0 auto', padding: 24 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 12 }}>
         <h1 style={{ fontSize: 24, fontWeight: 700 }}>Dashboard</h1>
+        <span>과거 재분석 결과는 Results의 분석 이력에서 확인하세요.</span>
         <span role="status">마지막 동기화: {lastSync ? new Date(lastSync).toLocaleString() : "아직 없음"} {nextPage ? "(다음 페이지 있음)" : ""}</span>
       </div>
 

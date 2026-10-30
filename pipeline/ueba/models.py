@@ -54,6 +54,8 @@ def train(rows, directory, version, minimum=3000, vec_size=64, min_samples=10):
 
 class Bundle:
     def __init__(self, directory, version):
+        if not isinstance(version,str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,100}',version):
+            raise ModelUnavailable('invalid_model_version')
         root=Path(directory)/version
         try:
             manifest=json.loads((root/'manifest.json').read_text())

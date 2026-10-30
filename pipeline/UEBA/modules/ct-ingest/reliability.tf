@@ -86,7 +86,7 @@ resource "aws_sqs_queue_policy" "delivery_failures" {
 resource "aws_iam_role_policy" "collector_failures" {
   role = aws_iam_role.lambda_exec.id
   policy = jsonencode({ Version = "2012-10-17", Statement = [
-    { Effect = "Allow", Action = ["s3:PutObject"], Resource = "${aws_s3_bucket.failures.arn}/invalid/*" },
+    { Effect = "Allow", Action = ["s3:PutObject"], Resource = ["${aws_s3_bucket.failures.arn}/invalid/*", "${aws_s3_bucket.failures.arn}/conflicts/*"] },
     { Effect = "Allow", Action = ["sqs:SendMessage"], Resource = aws_sqs_queue.execution_failures.arn }
   ] })
 }
@@ -102,3 +102,20 @@ resource "aws_lambda_function_event_invoke_config" "collector" {
 output "delivery_failure_queue" { value = aws_sqs_queue.delivery_failures.url }
 output "execution_failure_queue" { value = aws_sqs_queue.execution_failures.url }
 output "invalid_archive_bucket" { value = aws_s3_bucket.failures.id }
+# Operator policy only: not attached to the collector or an automatic worker.
+resource "aws_iam_policy" "recovery_operator" {
+  name = "ueba-reviewed-recovery-${local.sanitized_username_common}"
+  policy = jsonencode({ Version = "2012-10-17", Statement = [
+    { Effect = "Allow", Action = ["sqs:ReceiveMessage", "sqs:ChangeMessageVisibility", "sqs:DeleteMessage", "sqs:GetQueueAttributes"],
+    Resource = [aws_sqs_queue.delivery_failures.arn, aws_sqs_queue.execution_failures.arn] },
+    { Effect = "Allow", Action = ["lambda:InvokeFunction"], Resource = aws_lambda_function.event_collector.arn }
+  ] })
+}
+output "collector_recovery_targets" {
+  value = {
+    delivery_queue_url  = aws_sqs_queue.delivery_failures.url
+    execution_queue_url = aws_sqs_queue.execution_failures.url
+    function_arn        = aws_lambda_function.event_collector.arn
+    operator_policy_arn = aws_iam_policy.recovery_operator.arn
+  }
+}

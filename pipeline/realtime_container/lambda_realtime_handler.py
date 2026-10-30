@@ -28,5 +28,10 @@ def lambda_handler(event, context):
     s3=boto3.client('s3'); bucket=os.environ['BUCKET']
     # A missing bundle is an operational failure, never a normal/high-risk result.
     model=load_bundle(s3,bucket,os.environ.get('MODEL_VERSION',''))
+    enabled=os.environ.get('EMIT_ANOMALIES','false')=='true'
+    age=os.environ.get('ALERT_MAX_EVENT_AGE_SECONDS')
+    if enabled and (age is None or not age.isdigit()):
+        raise RuntimeError('explicit_alert_age_policy_required')
     return Detector(boto3.resource('dynamodb').Table(os.environ['EVENT_TABLE']),s3,bucket,model,
-                    boto3.client('events') if os.environ.get('EMIT_ANOMALIES','false')=='true' else None).batch(event)
+                    boto3.client('events') if enabled else None,
+                    alert_max_age_seconds=int(age) if enabled else None).batch(event)

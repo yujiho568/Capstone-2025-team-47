@@ -1,0 +1,26 @@
+{
+  "mode": "moto_local_not_aws",
+  "synthetic_not_accuracy_evaluation": true,
+  "input_events": 120,
+  "stored": 120,
+  "duplicate_replay": "duplicate",
+  "training": {
+    "status": "trained",
+    "count": 120,
+    "windows": 82,
+    "version": "demo-v2"
+  },
+  "results": 82,
+  "insufficient": 38,
+  "sync": {
+    "scanned": 82,
+    "imported": 82,
+    "skipped_existing": 0,
+    "errors": 0,
+    "failures": [],
+    "continuation_token": null,
+    "synced_at": "2026-10-30T15:03:44.608007Z",
+    "status": "success"
+  },
+  "queried": 82
+}

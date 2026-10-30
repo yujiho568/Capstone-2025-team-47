@@ -2,10 +2,12 @@
 import hashlib
 import json
 import logging
+from decimal import Decimal
 from datetime import datetime, timezone, timedelta
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
+HASH_POLICY = "cloudtrail-detail-v1"
 UTC = timezone.utc
 logger=logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -49,29 +51,47 @@ def normalize(event, retention_days=90, now=None):
                 expiresAt=int((now+timedelta(days=retention_days)).timestamp()),
                 rawEvent=json.dumps(event, separators=(',', ':'), allow_nan=False))
 
+def content_hash(event):
+    """Hash CloudTrail detail only; EventBridge delivery metadata is not content.
+
+    JSON object key order and equivalent eventTime timezone notation are normalized.
+    All other detail fields (including userIdentity/requestParameters) are compared.
+    """
+    if isinstance(event,str): event=json.loads(event)
+    detail=dict(event['detail'])
+    detail['eventTime']=iso(parse_time(detail['eventTime']))
+    return digest(json.dumps(detail,sort_keys=True,separators=(',',':'),ensure_ascii=False,allow_nan=False))
+
+
 class Collector:
     def __init__(self, table, s3, failure_bucket, retention_days=90):
         self.table, self.s3, self.failure_bucket = table, s3, failure_bucket
         if retention_days < 1: raise ValueError('retention_days')
         self.retention_days = retention_days
 
-    def collect(self, event):
+    def archive(self,event,reason,category='invalid',**metadata):
+        raw=json.dumps(event,sort_keys=True,ensure_ascii=False,default=str)
+        key=category+'/'+digest(raw+reason)+'.json'
+        self.s3.put_object(Bucket=self.failure_bucket,Key=key,
+            Body=json.dumps(dict(original=event,reason=reason,recordedAt=iso(datetime.now(UTC)),**metadata),
+                            ensure_ascii=False,default=str).encode(),ContentType='application/json')
+        result={'status':'invalid' if category=='invalid' else 'conflict','failureKey':key,'reason':reason}
+        logger.warning(json.dumps(result))
+        return result
+
+    def collect(self, event, *, handler_entered_at=None):
         try:
             item = normalize(event, self.retention_days)
+            incoming_hash = content_hash(event)
         except (ValueError, KeyError, TypeError, AttributeError) as exc:
             # Persist original input, not just a log message; archive failure must retry.
-            raw = json.dumps(event, ensure_ascii=False, default=str)
-            key = 'invalid/'+digest(raw)+'.json'
             reason=type(exc).__name__
             if isinstance(exc,KeyError) and exc.args and exc.args[0] in ('detail','userIdentity','accountId','eventID','eventTime','eventName'):
                 reason='missing_field:'+exc.args[0]
-            self.s3.put_object(Bucket=self.failure_bucket, Key=key,
-                Body=json.dumps({'original':event, 'reason':reason,
-                                 'recordedAt':iso(datetime.now(UTC))}).encode(),
-                ContentType='application/json')
-            return {'status':'invalid', 'failureKey':key}
+            return self.archive(event,reason)
         marker = dict(pk='EVENT#'+item['accountId']+'#'+item['eventID'], sk='DEDUP',
-                      expiresAt=item['expiresAt'])
+                      expiresAt=item['expiresAt'],contentHash=incoming_hash,hashPolicy=HASH_POLICY,
+                      eventPk=item['pk'],eventSk=item['sk'])
         # Resource client serializes native Python values in transact_write_items.
         def put(row):
             return {'Put':{'TableName':self.table.name, 'Item':row,
@@ -84,11 +104,30 @@ class Collector:
                 # Only a conditional marker collision is an accepted duplicate.
                 if (len(reasons)==2 and reasons[0].get('Code')=='ConditionalCheckFailed'
                     and reasons[1].get('Code') in ('None','ConditionalCheckFailed')):
-                    return {'status':'duplicate', 'eventID':item['eventID']}
+                    existing=self.table.get_item(Key={'pk':marker['pk'],'sk':'DEDUP'},ConsistentRead=True).get('Item')
+                    if not existing:
+                        # TTL race or uncertain state: don't acknowledge a duplicate.
+                        raise
+                    if existing.get('hashPolicy')!=HASH_POLICY or not existing.get('contentHash'):
+                        return self.archive(event,'legacy_or_unknown_hash_policy','conflicts',eventID=item['eventID'])
+                    if existing['contentHash']!=incoming_hash:
+                        return self.archive(event,'content_hash_mismatch','conflicts',eventID=item['eventID'],
+                                            storedHash=existing['contentHash'],incomingHash=incoming_hash,hashPolicy=HASH_POLICY)
+                    expiry=existing.get('expiresAt')
+                    if not isinstance(expiry,(int,float,Decimal)) or expiry<=datetime.now(UTC).timestamp():
+                        return self.archive(event,'marker_retention_expired_or_unknown','conflicts',eventID=item['eventID'])
+                    if not existing.get('eventPk') or not existing.get('eventSk'):
+                        return self.archive(event,'marker_record_pointer_missing','conflicts',eventID=item['eventID'])
+                    stored=self.table.get_item(Key={'pk':existing['eventPk'],'sk':existing['eventSk']},ConsistentRead=True).get('Item')
+                    if not stored or any(stored.get(k)!=item[k] for k in ('accountId','userId','eventID','timestamp','eventName')):
+                        return self.archive(event,'behavior_record_missing_or_inconsistent','conflicts',eventID=item['eventID'])
+                    return {'status':'duplicate', 'eventID':item['eventID'],'hashPolicy':HASH_POLICY,'contentHash':incoming_hash}
             raise
         # This acknowledgement timestamp is sampled after DynamoDB returns success.
         # The item itself contains writeRequestedAt, not a falsely labelled completion time.
-        receipt={'status':'stored','eventID':item['eventID'],'storedAt':iso(datetime.now(UTC))}
+        receipt={'status':'stored','eventID':item['eventID'],'storedAt':iso(datetime.now(UTC)),
+                 'hashPolicy':HASH_POLICY,'contentHash':incoming_hash,'writeRequestedAt':item['writeRequestedAt']}
+        if handler_entered_at is not None: receipt['handlerEnteredAt']=handler_entered_at
         logger.info(json.dumps(receipt))
         return receipt
 

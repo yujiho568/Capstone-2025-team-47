@@ -1,0 +1,286 @@
+{
+  "mode": "local_moto_only",
+  "aws_cloudtrail_measured": false,
+  "aws_cloudwatch_measured": false,
+  "managed_delivery_measured": false,
+  "requested_events_per_repetition": 30,
+  "completed_repetitions": 3,
+  "warmups_per_repetition": 1,
+  "exclusions": "Resource creation and one warmup per repetition excluded. No intentional delay injected.",
+  "repetitions": [
+    {
+      "source_records": 30,
+      "receipt_records": 30,
+      "matched": 30,
+      "missing": 0,
+      "unexpected": 0,
+      "source_duplicates": 0,
+      "storage_duplicates": 0,
+      "negative_latency_count": 0,
+      "statistics": {
+        "mean_seconds": 0.009278633333333333,
+        "median_seconds": 0.0073445,
+        "p95_seconds": 0.01194,
+        "max_seconds": 0.077162
+      },
+      "stages": {
+        "event_to_handler": {
+          "samples": 0,
+          "negative_count": 0,
+          "statistics": null
+        },
+        "event_to_local_caller": {
+          "samples": 30,
+          "negative_count": 0,
+          "statistics": {
+            "mean_seconds": 5.366666666666666e-06,
+            "median_seconds": 4e-06,
+            "p95_seconds": 6e-06,
+            "max_seconds": 3.1e-05
+          }
+        },
+        "handler_to_write_request": {
+          "samples": 0,
+          "negative_count": 0,
+          "statistics": null
+        },
+        "local_caller_to_write_request": {
+          "samples": 30,
+          "negative_count": 0,
+          "statistics": {
+            "mean_seconds": 1.43e-05,
+            "median_seconds": 1.1e-05,
+            "p95_seconds": 1.9e-05,
+            "max_seconds": 0.000102
+          }
+        },
+        "write_request_to_ack": {
+          "samples": 30,
+          "negative_count": 0,
+          "statistics": {
+            "mean_seconds": 0.009258966666666667,
+            "median_seconds": 0.0073255,
+            "p95_seconds": 0.011925,
+            "max_seconds": 0.077149
+          }
+        },
+        "event_to_cloudwatch_ingestion": {
+          "samples": 0,
+          "negative_count": 0,
+          "statistics": null
+        },
+        "cloudwatch_ingestion_to_read": {
+          "samples": 0,
+          "negative_count": 0,
+          "statistics": null
+        },
+        "read_to_ack": {
+          "samples": 0,
+          "negative_count": 0,
+          "statistics": null
+        }
+      },
+      "source_precision": "fractional_seconds",
+      "caveat": "Event-time precision, delivery delay and clock skew bound accuracy; not a millisecond-accuracy measurement.",
+      "run": 1,
+      "stored_rows": 30,
+      "duplicate_replay_status": "duplicate",
+      "monotonic_collector_call": {
+        "mean_seconds": 0.009297621834654516,
+        "median_seconds": 0.007358264505455736,
+        "p95_seconds": 0.011967655998887494,
+        "max_seconds": 0.07718898299208377
+      },
+      "sample": {
+        "eventID": "local-0-0-aa36330e-9b3c-4e0c-9f8e-10245326d873",
+        "eventTime": "2026-10-30T14:58:00.896416Z",
+        "collectorReceivedAt": "2026-10-30T14:58:00.896422Z",
+        "writeRequestedAt": "2026-10-30T14:58:00.896441Z",
+        "storedAt": "2026-10-30T14:58:00.899234Z"
+      }
+    },
+    {
+      "source_records": 30,
+      "receipt_records": 30,
+      "matched": 30,
+      "missing": 0,
+      "unexpected": 0,
+      "source_duplicates": 0,
+      "storage_duplicates": 0,
+      "negative_latency_count": 0,
+      "statistics": {
+        "mean_seconds": 0.019060766666666666,
+        "median_seconds": 0.015960000000000002,
+        "p95_seconds": 0.02232,
+        "max_seconds": 0.118896
+      },
+      "stages": {
+        "event_to_handler": {
+          "samples": 0,
+          "negative_count": 0,
+          "statistics": null
+        },
+        "event_to_local_caller": {
+          "samples": 30,
+          "negative_count": 0,
+          "statistics": {
+            "mean_seconds": 9.733333333333334e-06,
+            "median_seconds": 4.5e-06,
+            "p95_seconds": 6e-06,
+            "max_seconds": 0.000161
+          }
+        },
+        "handler_to_write_request": {
+          "samples": 0,
+          "negative_count": 0,
+          "statistics": null
+        },
+        "local_caller_to_write_request": {
+          "samples": 30,
+          "negative_count": 0,
+          "statistics": {
+            "mean_seconds": 2.1433333333333334e-05,
+            "median_seconds": 1.2e-05,
+            "p95_seconds": 9.3e-05,
+            "max_seconds": 0.000189
+          }
+        },
+        "write_request_to_ack": {
+          "samples": 30,
+          "negative_count": 0,
+          "statistics": {
+            "mean_seconds": 0.0190296,
+            "median_seconds": 0.015944,
+            "p95_seconds": 0.022302,
+            "max_seconds": 0.118878
+          }
+        },
+        "event_to_cloudwatch_ingestion": {
+          "samples": 0,
+          "negative_count": 0,
+          "statistics": null
+        },
+        "cloudwatch_ingestion_to_read": {
+          "samples": 0,
+          "negative_count": 0,
+          "statistics": null
+        },
+        "read_to_ack": {
+          "samples": 0,
+          "negative_count": 0,
+          "statistics": null
+        }
+      },
+      "source_precision": "fractional_seconds",
+      "caveat": "Event-time precision, delivery delay and clock skew bound accuracy; not a millisecond-accuracy measurement.",
+      "run": 2,
+      "stored_rows": 30,
+      "duplicate_replay_status": "duplicate",
+      "monotonic_collector_call": {
+        "mean_seconds": 0.01908594806736801,
+        "median_seconds": 0.01598153250233736,
+        "p95_seconds": 0.02239214300061576,
+        "max_seconds": 0.11892492799961474
+      },
+      "sample": {
+        "eventID": "local-1-0-83203a41-f70c-4a05-8ccf-c9268ecfd8a9",
+        "eventTime": "2026-10-30T14:58:01.230027Z",
+        "collectorReceivedAt": "2026-10-30T14:58:01.230033Z",
+        "writeRequestedAt": "2026-10-30T14:58:01.230045Z",
+        "storedAt": "2026-10-30T14:58:01.239865Z"
+      }
+    },
+    {
+      "source_records": 30,
+      "receipt_records": 30,
+      "matched": 30,
+      "missing": 0,
+      "unexpected": 0,
+      "source_duplicates": 0,
+      "storage_duplicates": 0,
+      "negative_latency_count": 0,
+      "statistics": {
+        "mean_seconds": 0.030241733333333333,
+        "median_seconds": 0.0250135,
+        "p95_seconds": 0.029815,
+        "max_seconds": 0.184649
+      },
+      "stages": {
+        "event_to_handler": {
+          "samples": 0,
+          "negative_count": 0,
+          "statistics": null
+        },
+        "event_to_local_caller": {
+          "samples": 30,
+          "negative_count": 0,
+          "statistics": {
+            "mean_seconds": 1.4533333333333334e-05,
+            "median_seconds": 5e-06,
+            "p95_seconds": 3.8e-05,
+            "max_seconds": 0.000239
+          }
+        },
+        "handler_to_write_request": {
+          "samples": 0,
+          "negative_count": 0,
+          "statistics": null
+        },
+        "local_caller_to_write_request": {
+          "samples": 30,
+          "negative_count": 0,
+          "statistics": {
+            "mean_seconds": 1.31e-05,
+            "median_seconds": 1.3e-05,
+            "p95_seconds": 1.5e-05,
+            "max_seconds": 1.6e-05
+          }
+        },
+        "write_request_to_ack": {
+          "samples": 30,
+          "negative_count": 0,
+          "statistics": {
+            "mean_seconds": 0.0302141,
+            "median_seconds": 0.024995999999999997,
+            "p95_seconds": 0.029774,
+            "max_seconds": 0.184633
+          }
+        },
+        "event_to_cloudwatch_ingestion": {
+          "samples": 0,
+          "negative_count": 0,
+          "statistics": null
+        },
+        "cloudwatch_ingestion_to_read": {
+          "samples": 0,
+          "negative_count": 0,
+          "statistics": null
+        },
+        "read_to_ack": {
+          "samples": 0,
+          "negative_count": 0,
+          "statistics": null
+        }
+      },
+      "source_precision": "fractional_seconds",
+      "caveat": "Event-time precision, delivery delay and clock skew bound accuracy; not a millisecond-accuracy measurement.",
+      "run": 3,
+      "stored_rows": 30,
+      "duplicate_replay_status": "duplicate",
+      "monotonic_collector_call": {
+        "mean_seconds": 0.030266380232933442,
+        "median_seconds": 0.025081215993850492,
+        "p95_seconds": 0.029824062003172003,
+        "max_seconds": 0.18467967699689325
+      },
+      "sample": {
+        "eventID": "local-2-0-0ef546ab-106e-420b-ba5c-beaf899ab9e5",
+        "eventTime": "2026-10-30T14:58:01.874829Z",
+        "collectorReceivedAt": "2026-10-30T14:58:01.874856Z",
+        "writeRequestedAt": "2026-10-30T14:58:01.874870Z",
+        "storedAt": "2026-10-30T14:58:01.904644Z"
+      }
+    }
+  ],
+  "completed_events": 90
+}

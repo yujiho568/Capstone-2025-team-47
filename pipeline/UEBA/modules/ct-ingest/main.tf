@@ -63,7 +63,8 @@ resource "aws_iam_policy" "lambda_dynamodb_policy" {
       {
         Effect = "Allow",
         Action = [
-          "dynamodb:PutItem"
+          "dynamodb:PutItem",
+          "dynamodb:GetItem"
         ],
         Resource = [aws_dynamodb_table.events_v2.arn]
       }
@@ -108,6 +109,7 @@ resource "aws_lambda_function" "event_collector" {
   role             = aws_iam_role.lambda_exec.arn
   handler          = "event_collector.handler"
   runtime          = "python3.11"
+  timeout          = 60
   source_code_hash = data.archive_file.collector.output_base64sha256
 
   depends_on = [aws_iam_role_policy_attachment.lambda_dynamodb_attach, aws_iam_role_policy_attachment.lambda_logging_attach, aws_iam_role_policy.collector_failures]

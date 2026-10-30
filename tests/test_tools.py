@@ -26,3 +26,17 @@ def test_current_clock_latency_records_actual_stages(tmp_path):
     s=r['sample']
     assert parse_time(s['eventTime'])<=parse_time(s['collectorReceivedAt'])<=parse_time(s['writeRequestedAt'])<=parse_time(s['storedAt'])
     assert (path/'run-1-receipts.jsonl').exists()
+
+def test_stage_timings_do_not_invent_missing_cloudwatch_or_handler_samples():
+    events=[{'eventID':'a','timestamp':'2026-01-01T00:00:00Z'}]
+    receipts=[dict(eventID='a',collectorReceivedAt='2026-01-01T00:00:01Z',
+                   writeRequestedAt='2026-01-01T00:00:02Z',storedAt='2026-01-01T00:00:03Z')]
+    r=summarize(events,receipts)
+    assert r['stages']['write_request_to_ack']['statistics']['mean_seconds']==1
+    assert r['stages']['event_to_handler']['samples']==0
+    assert r['stages']['event_to_cloudwatch_ingestion']['statistics'] is None
+    receipts[0].update(handlerEnteredAt='2026-01-01T00:00:01Z',
+                       ingestionTime='2026-01-01T00:00:04Z',readAt='2026-01-01T00:00:02Z')
+    r=summarize(events,receipts)
+    assert r['stages']['event_to_handler']['samples']==1
+    assert r['stages']['cloudwatch_ingestion_to_read']['negative_count']==1

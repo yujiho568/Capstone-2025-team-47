@@ -1,0 +1,10 @@
+{
+  "queue_url": "https://sqs.ap-northeast-2.amazonaws.com/123456789012/REPLACE_WITH_REVIEWED_QUEUE",
+  "function_arn": "arn:aws:lambda:ap-northeast-2:123456789012:function:REPLACE_WITH_COLLECTOR",
+  "region": "ap-northeast-2",
+  "max_messages": 10,
+  "max_seconds": 300,
+  "visibility_seconds": 900,
+  "invoke_read_timeout": 65,
+  "max_receive_count": 5
+}

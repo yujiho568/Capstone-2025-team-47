@@ -16,6 +16,7 @@ function Results() {
   const [loading, setLoading] = useState(false);
 
   const [threshold, setThreshold] = useState('all'); // all | 50 | 70
+  const [analysisFilter, setAnalysisFilter] = useState('all');
   const [initialFilter, setInitialFilter] = useState('all'); // all | 0 | 1
   const [page, setPage] = useState(1);
   const pageSize = 50;
@@ -91,6 +92,10 @@ function Results() {
           key: r.s3_key,
           cred: r.source_credential_name || '',
           userIdStr: r.user_id_str || '',
+          analysisKind: r.analysis_kind || 'legacy',
+          analysisVersion: r.analysis_version || '-',
+          modelVersion: r.model_version || '-',
+          supersedesKey: r.supersedes_key || '',
         }))
       );
     } catch (e) {
@@ -121,12 +126,13 @@ function Results() {
   // 필터링
   const filtered = useMemo(() => {
     let arr = items || [];
+    if (analysisFilter !== 'all') arr = arr.filter(it => it.analysisKind === analysisFilter);
     if (threshold === '50') arr = arr.filter((it) => Number(it.risk) >= 50);
     if (threshold === '70') arr = arr.filter((it) => Number(it.risk) >= 70);
     if (initialFilter === '0') arr = arr.filter((it) => it.init === 0);
     if (initialFilter === '1') arr = arr.filter((it) => it.init === 1);
     return arr;
-  }, [items, threshold, initialFilter]);
+  }, [items, threshold, initialFilter, analysisFilter]);
 
   // 요약
   const counts = useMemo(() => {
@@ -188,6 +194,13 @@ function Results() {
           <option value="70">위험 이상 (≥70)</option>
         </select>
 
+        <label style={{ fontWeight: 600 }}>분석 이력</label>
+        <select value={analysisFilter} onChange={e => { setAnalysisFilter(e.target.value); setPage(1); }}>
+          <option value="all">전체 이력 (동일 이벤트의 수정 전·후 포함)</option>
+          <option value="realtime">실시간 결과</option>
+          <option value="reanalysis">과거 재분석</option>
+          <option value="legacy">이전 형식</option>
+        </select>
         <label style={{ fontWeight: 600 }}>세션 구분</label>
         <select
           value={initialFilter}
@@ -217,7 +230,7 @@ function Results() {
       {/* 요약 배지 */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
         <span style={{ padding: '6px 10px', borderRadius: 999, background: '#f3f4f6', color: '#111827' }}>
-          총 {counts.total}건
+          총 {counts.total}개 결과 (이력 기준)
         </span>
         <span style={{ padding: '6px 10px', borderRadius: 999, background: '#fffbeb', color: '#92400e' }}>
           경고 {counts.warn}건 (≥50)
@@ -237,6 +250,7 @@ function Results() {
               <th style={th}>세션</th>
               <th style={th}>risk</th>
               <th style={th}>상태</th>
+              <th style={th}>분석 이력</th>
               <th style={th}>S3 Key</th>
             </tr>
           </thead>
@@ -257,6 +271,10 @@ function Results() {
                     {Number(it.risk).toFixed(4)}
                   </td>
                   <td style={{ ...td, fontWeight: 600, color: levelColor(it.risk) }}>{level(it.risk)}</td>
+                  <td style={td} title={it.supersedesKey ? `이전 결과: ${it.supersedesKey}` : '이전 결과 없음'}>
+                    {it.analysisKind === 'reanalysis' ? '과거 재분석' : it.analysisKind === 'realtime' ? '실시간' : '이전 형식'}
+                    <br />모델: {it.modelVersion}<br />분석: {it.analysisVersion}
+                  </td>
                   <td style={{ ...td, maxWidth: 380, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {it.key}
                   </td>

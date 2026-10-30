@@ -12,7 +12,7 @@ STATE=ROOT/'.demo'
 
 
 def prepare_env():
-    STATE.mkdir(exist_ok=True)
+    STATE.mkdir(parents=True,exist_ok=True)
     # Per-demo application encryption/signing keys, never AWS credentials; don't print.
     from cryptography.fernet import Fernet
     config=STATE/'app-keys.json'
@@ -53,7 +53,7 @@ def run(serve=False):
             page=table.scan(**kwargs);rows.extend(r for r in page['Items'] if 'eventID' in r)
             if not page.get('LastEvaluatedKey'): break
             kwargs['ExclusiveStartKey']=page['LastEvaluatedKey']
-        version='demo-v1';modelroot=STATE/'models'
+        version='demo-v2';modelroot=STATE/'models'
         if not (modelroot/version).exists():
             training=train(rows,modelroot,version,minimum=100,vec_size=16,min_samples=3)
         else: training={'status':'reused','version':version}
@@ -96,7 +96,14 @@ def run(serve=False):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('command',choices=['run','serve','reset'])
+    p.add_argument('--state-dir',help='Optional separate state directory inside .demo; existing files are preserved')
     args=p.parse_args()
+    if args.state_dir:
+        candidate=Path(args.state_dir)
+        if not candidate.is_absolute(): candidate=ROOT/candidate
+        if candidate.is_symlink() or not candidate.resolve().is_relative_to((ROOT/'.demo').resolve()):
+            p.error('state directory must stay inside repository .demo')
+        STATE=candidate.resolve()
     if args.command=='reset':
         if STATE.exists() and not STATE.is_symlink(): shutil.rmtree(STATE)
         print('Removed only .demo local state. Stop the demo server before reset.')

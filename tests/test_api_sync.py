@@ -132,3 +132,36 @@ def test_temporary_credential_registration_and_root_rejection(api,aws,monkeypatc
     fake=Mock();fake.get_caller_identity.return_value=dict(Account='123456789012',Arn='arn:aws:iam::123456789012:root',UserId='root')
     monkeypatch.setattr(credentials.boto3,'client',lambda *a,**k:fake)
     assert client.post(f'/api/v1/credentials/{uid}/check',json=body,headers=auth).status_code==400
+
+def test_partial_reanalysis_is_not_imported_then_completed_lineage_is_visible(api,aws,model_dir):
+    from pipeline.ueba.models import Bundle
+    from pipeline.ueba.events import Collector,normalize,digest
+    from pipeline.ueba.detection import Detector
+    from pipeline.ueba.reanalysis import make_snapshot,plan_reanalysis,execute_reanalysis,ReanalysisUnavailable
+    from conftest import cloud_event
+    client,factory=api;uid,auth=login(client);t,s3=aws
+    bundle=Bundle(model_dir,'v1');collector=Collector(t,s3,'failure-archive');detector=Detector(t,s3,'ueba-results',bundle)
+    rows=[]
+    for i in range(40):
+        e=cloud_event(i);collector.collect(e);row=normalize(e);rows.append(row);detector.process(row)
+    snap=make_snapshot(rows,coverage_start='2026-01-01T00:00:00Z',coverage_end='2026-01-02T00:00:00Z',
+        source='synthetic-fixture',completeness_evidence='Complete generated fixture',session_boundaries_verified=True)
+    plan=plan_reanalysis(snap,[cloud_event(100,timestamp='2026-01-01T00:04:05Z')])
+    clock=Mock(side_effect=[0,0,5])
+    with pytest.raises(ReanalysisUnavailable):
+        execute_reanalysis(plan,s3,'ueba-results',bundle,analysis_version='api-test',max_seconds=1,clock=clock)
+    source=SimpleNamespace(bucket='ueba-results',prefix=f"results/realtime/{digest(rows[0]['userId'])}/",principal=rows[0]['userId'],credential_name='demo')
+    with factory() as db:
+        r=import_s3_jsons(db,uid,source,s3)
+        assert any(f['reason']=='analysis_run_incomplete' for f in r['failures'])
+        assert all(json.loads(row.raw_json).get('analysisKind')!='reanalysis' for row in db.query(UebaResult))
+    result=execute_reanalysis(plan,s3,'ueba-results',bundle,analysis_version='api-test')
+    with factory() as db:
+        r=import_s3_jsons(db,uid,source,s3)
+        assert r['errors']==0 and r['imported']==len(result['resultKeys'])
+    response=client.get(f'/api/v1/ueba-results/{uid}',headers=auth);assert response.status_code==200
+    corrections=[r for r in response.json() if r['analysis_kind']=='reanalysis']
+    assert len(corrections)==len(result['resultKeys'])
+    assert all(r['analysis_version']=='api-test' and r['model_version']=='v1' for r in corrections)
+    assert any(r['supersedes_key'] for r in corrections)
+    assert all(len(r['input_event_ids'])==20 for r in corrections)

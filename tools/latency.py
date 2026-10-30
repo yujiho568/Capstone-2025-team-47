@@ -9,6 +9,36 @@ def timestamp(s):
     if not d.tzinfo: raise ValueError('timezone_required')
     return d
 
+def stage_statistics(origins,stored_receipts):
+    definitions={
+        'event_to_handler':('eventTime','handlerEnteredAt'),
+        'event_to_local_caller':('eventTime','collectorReceivedAt'),
+        'handler_to_write_request':('handlerEnteredAt','writeRequestedAt'),
+        'local_caller_to_write_request':('collectorReceivedAt','writeRequestedAt'),
+        'write_request_to_ack':('writeRequestedAt','storedAt'),
+        'event_to_cloudwatch_ingestion':('eventTime','ingestionTime'),
+        'cloudwatch_ingestion_to_read':('ingestionTime','readAt'),
+        'read_to_ack':('readAt','storedAt'),
+    }
+    selected={}
+    for receipt in stored_receipts:
+        if receipt.get('storedAt') and receipt.get('eventID') in origins:
+            eid=receipt['eventID']
+            if eid not in selected or timestamp(receipt['storedAt'])<timestamp(selected[eid]['storedAt']): selected[eid]=receipt
+    output={}
+    for name,(start,end) in definitions.items():
+        values=[]
+        for eid,r in selected.items():
+            fields=dict(r,eventTime=origins[eid][0])
+            if fields.get(start) and fields.get(end):
+                values.append((timestamp(fields[end])-timestamp(fields[start])).total_seconds())
+        values.sort()
+        output[name]=dict(samples=len(values),negative_count=sum(x<0 for x in values),
+            statistics=dict(mean_seconds=statistics.mean(values),median_seconds=statistics.median(values),
+                p95_seconds=values[math.ceil(.95*len(values))-1],max_seconds=max(values)) if values else None)
+    return output
+
+
 def summarize(events,receipts):
     origins=defaultdict(list);stored=defaultdict(list)
     for event in events:
@@ -25,6 +55,7 @@ def summarize(events,receipts):
         matched=len(matched),missing=len(origins.keys()-stored.keys()),unexpected=len(stored.keys()-origins.keys()),
         source_duplicates=sum(len(v)-1 for v in origins.values()),storage_duplicates=sum(len(v)-1 for v in stored.values()),
         negative_latency_count=sum(v<0 for v in values),statistics=stats,
+        stages=stage_statistics(origins,receipts),
         source_precision='fractional_seconds' if any('.' in v[0] for v in origins.values()) else 'seconds',
         caveat='Event-time precision, delivery delay and clock skew bound accuracy; not a millisecond-accuracy measurement.')
 

@@ -1,0 +1,34 @@
+{
+  "mode": "moto_local_only",
+  "synthetic_not_accuracy_evaluation": true,
+  "managed_retries_measured": false,
+  "input_events": 120,
+  "training": {
+    "status": "trained",
+    "count": 119,
+    "windows": 81,
+    "version": "recovery-model-v1"
+  },
+  "replay_outcomes": [
+    "stored",
+    "duplicate"
+  ],
+  "handler_timestamp_recorded": true,
+  "deleted": 2,
+  "collision": "conflict",
+  "corrected_results": 20,
+  "chronological_reference_matches": true,
+  "notifications_published": 0,
+  "sync": {
+    "scanned": 102,
+    "imported": 102,
+    "skipped_existing": 0,
+    "errors": 0,
+    "failures": [],
+    "continuation_token": null,
+    "synced_at": "2026-10-30T14:52:56.502605Z",
+    "status": "success"
+  },
+  "queried": 102,
+  "reanalysis_rows": 20
+}

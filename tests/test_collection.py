@@ -50,7 +50,7 @@ def test_non_duplicate_transaction_failure_not_hidden(aws):
 def test_dedup_eventid_even_changed_timestamp_identity(aws):
     t,s=aws;c=Collector(t,s,'failure-archive');e=cloud_event()
     c.collect(e);e['detail']['eventTime']='2026-02-01T00:00:00Z';e['detail']['userIdentity']['principalId']='OTHER'
-    assert c.collect(e)['status']=='duplicate'
+    assert c.collect(e)['status']=='conflict'
 
 def test_completion_receipt_is_after_success(aws):
     from pipeline.ueba.events import parse_time

@@ -53,6 +53,7 @@ def import_s3_jsons(db,user_id,source,s3,max_files=100,continuation_token=None,d
     except Exception: raise SourceFailure('storage_unavailable') from None
     summary=dict(scanned=0,imported=0,skipped_existing=0,errors=0,failures=[],
                  continuation_token=None,synced_at=datetime.now(timezone.utc),status='success')
+    publication_cache={}
     for obj in page.get('Contents',[]):
         key=obj['Key']
         if not key.endswith('.json'): continue
@@ -65,6 +66,9 @@ def import_s3_jsons(db,user_id,source,s3,max_files=100,continuation_token=None,d
             payload=json.loads(body,parse_constant=lambda _: (_ for _ in ()).throw(ValueError('non_finite_json')))
             ResultPayload.model_validate(payload)
             if payload['userId']!=source.principal: raise ValueError('principal_mismatch')
+            if payload.get('analysisKind')=='reanalysis':
+                from app.services.analysis_publication import verify_publication
+                verify_publication(s3,source.bucket,source.principal,key,payload,publication_cache)
             canonical=json.dumps(payload,sort_keys=True,allow_nan=False)
             if dry_run: continue
             row=map_payload_to_model(user_id,source.bucket,key,obj.get('LastModified'),payload,source.credential_name)
@@ -81,7 +85,7 @@ def import_s3_jsons(db,user_id,source,s3,max_files=100,continuation_token=None,d
             reason=aws_reason(exc)
             summary['failures'].append(dict(key=key,reason=reason))
         except (ValueError,TypeError,UnicodeDecodeError,ValidationError) as exc:
-            reason=str(exc) if str(exc) in ('object_too_large','principal_mismatch','immutable_object_changed') else 'invalid_result_json_or_schema'
+            reason=str(exc) if str(exc) in ('object_too_large','principal_mismatch','immutable_object_changed','analysis_run_incomplete','invalid_analysis_lineage') else 'invalid_result_json_or_schema'
             summary['failures'].append(dict(key=key,reason=reason))
         except IntegrityError:
             db.rollback(); raise SourceFailure('database_integrity_error') from None
