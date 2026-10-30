@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+
+# Virtual environment
+venv/
+.venv/
+
+# Environment variables
+.env
+
+# DB
+*.db
+*.sqlite
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Node.js
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Mac
+.DS_Store
+
+# history files
+.history
+.venv*/
+.demo/
+.pytest_cache/
+**/.terraform/
+*.tfstate*
+*.tfplan
+pipeline/UEBA/.build/
+pipeline/UEBA/modules/ct-pipeline/.build/
+pipeline/UEBA/modules/ct-pipeline/build/

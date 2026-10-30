@@ -1,0 +1,236 @@
+/* Layout base */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.app-header {
+  height: 56px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: #ffffff;
+}
+
+.app-header__title {
+  font-weight: 700;
+  font-size: 18px;
+  color: #111827;
+  flex: 1;
+  text-align: center;
+}
+
+.app-header__menu {
+  width: 36px;
+  height: 32px;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center; /* center lines horizontally */
+  gap: 5px;
+  border: 1px solid #c7d2fe; /* soft blue border */
+  background: #eef2ff; /* light indigo */
+  cursor: pointer;
+  margin-right: 12px;
+  margin-left: -6px; /* slightly left but keep lines inside border */
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.app-header__menu-line {
+  height: 2px;
+  width: 20px;
+  background: #1e3a8a; /* blue lines for better contrast */
+  display: block;
+}
+
+.app-header__menu:hover {
+  background: #e0e7ff;
+}
+
+.app-header__menu:active {
+  background: #dbeafe;
+}
+
+.app-header__menu:focus { outline: none; }
+.app-header__menu:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.25); /* subtle focus, not solid blue ring */
+}
+
+/* User Profile Styles */
+.user-profile {
+  position: relative;
+}
+
+.user-profile__button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #111827;
+  transition: all 0.2s ease;
+}
+
+.user-profile__button:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.user-profile__button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.25);
+}
+
+.user-profile__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #1e3a8a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.user-profile__name {
+  font-weight: 500;
+}
+
+.user-profile__arrow {
+  transition: transform 0.2s ease;
+}
+
+.user-profile__dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  min-width: 240px;
+  z-index: 1000;
+}
+
+.user-profile__header {
+  padding: 16px;
+  border-bottom: 1px solid #f3f4f6;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-profile__info {
+  flex: 1;
+}
+
+.user-profile__fullname {
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 2px;
+}
+
+.user-profile__email {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.user-profile__menu {
+  padding: 8px 0;
+}
+
+.user-profile__menu-item {
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 14px;
+  color: #111827;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.user-profile__menu-item:hover {
+  background: #f9fafb;
+}
+
+.user-profile__menu-item--logout {
+  color: #dc2626;
+}
+
+.user-profile__menu-item--logout:hover {
+  background: #fef2f2;
+}
+
+.user-profile__divider {
+  margin: 8px 0;
+  border: none;
+  border-top: 1px solid #e5e7eb;
+}
+
+.app-body {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+}
+
+.app-sidebar {
+  width: 0;
+  border-right: 1px solid #e5e7eb;
+  padding: 12px 0;
+  background: #1e3a8a;
+  overflow: hidden;
+  transition: width 200ms ease;
+}
+
+.app-sidebar--open {
+  width: 220px;
+  padding: 12px;
+}
+
+.app-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.app-nav__link {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #ffffffcc;
+  text-decoration: none;
+}
+
+.app-nav__link:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.app-nav__link--active {
+  background: #ffffff;
+  color: #1e3a8a;
+}
+
+.app-content {
+  flex: 1;
+  padding: 16px;
+  overflow: auto;
+  background: #ffffff;
+}
+
+.page {
+  font-size: 20px;
+}

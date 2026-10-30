@@ -1,0 +1,65 @@
+{
+  "upstream_commit": "b56107ea06d1fe1e7c0801f3402fe008a72b7ff7",
+  "archives": {
+    "UEBA.zip": {
+      "sha256": "005123e275db1ebe7b5f3f7900a082f79bc8c50417f823c3598fad203772b5c5",
+      "files": {
+        "UEBA/main.tf": "d0d955a822d88ff851fe54ec0eeb18dfa143912db2a1e46f4e2bbf9d230ccdf4",
+        "UEBA/modules/ct-ingest/event_collector.zip": "4c66ef44dd584368bde310c2b99bb7744b06b8c62f35692d605e35d40d864dae",
+        "UEBA/modules/ct-ingest/main.tf": "43ffe82c7e39b177ce466edaabb3072f7143232c7e77eb45b1d16050c57ba214",
+        "UEBA/modules/ct-ingest/outputs.tf": "99dc044e97ebe997a8d2d48b3ef61e6d7d17b556ce0be4313739387a68b0733a",
+        "UEBA/modules/ct-pipeline/.build/ct-count.zip": "003f7c222c51bb9d985f71521be634e28cd231fa241471e0e3a677bf2d6301de",
+        "UEBA/modules/ct-pipeline/.build/ct-summarize.zip": "0104acb922ddf0dbbaea73d8c6ea1e1b16f2d64ca3ef52b77e4337868833db42",
+        "UEBA/modules/ct-pipeline/build/remediation.zip": "d515e1df4af2a06f3a658d6dd902e3629f94fd4fb7e4e979e727a5ce8884a694",
+        "UEBA/modules/ct-pipeline/ecr.tf": "bfe218d815f52e39a59533c9946454aa575bc3a09767ed84ddc978934a86bfd3",
+        "UEBA/modules/ct-pipeline/eventbridge.tf": "cf9dea93c5dead0605cda76689684c6d48cb4f674528bb5e79ca3b3e2024fe01",
+        "UEBA/modules/ct-pipeline/iam.tf": "43216c708d16329a751f70bea46c3c9f3f5b7451a252762a0f49d088264c6a08",
+        "UEBA/modules/ct-pipeline/lambda/ct-count/handler.py": "6f67d3d005bd30f124f9087d60d76d98447ab4e8d1f3fd3de6fbb80dc5b0d96c",
+        "UEBA/modules/ct-pipeline/lambda/ct-summarize/handler.py": "add8f489aa815fe8a71c0462c86696e9cfffc978fc8623bd6b193f08cb929735",
+        "UEBA/modules/ct-pipeline/lambdas.tf": "957216fbd46b5e1a96153e91c2fa73cc7d41605988bdb244c05f2dc436bcb35f",
+        "UEBA/modules/ct-pipeline/main.tf": "ab52fb54e6ec017781f1f6cc30085d5fd0201528c7c7cffb681abfc07929e100",
+        "UEBA/modules/ct-pipeline/outputs.tf": "ed776a41668905973d2c89e5bfdd1150f6539684cedd26c0584dac67e6e9c83b",
+        "UEBA/modules/ct-pipeline/realtime.tf": "3947132b6fb6b83cd88e7f86499b7f1094a0b1474f8e03eeb56ddf8e55c47765",
+        "UEBA/modules/ct-pipeline/remediation.tf": "cc8ab765ade8f5e9de2942c0b0f2eb753aee937f5517a53f70fb39158a41af57",
+        "UEBA/modules/ct-pipeline/remediation_lambda/index.py": "66b409a756964d8e6f5f01235b648a7fd7c06b5214146be388ca2e20303cc3bb",
+        "UEBA/modules/ct-pipeline/sfn.tf": "4bf69aa0dc42037282170f301c04fb68bf5f55db54e58119e9a9640af9b2969d",
+        "UEBA/modules/ct-pipeline/variables.tf": "d98824c7bb3004dde7b5391a5947d693bf31525a9c91ad959d1aaf60d9ac0b5a",
+        "UEBA/outputs.tf": "88f14d925a075e91cda772acba45a86ae465da359a0dbd075724c30ec500b0a5",
+        "UEBA/providers.tf": "49a9bc2d5130b015a6f9a447a875a8a0e89f717701836fb0e92456f37e8fdc33",
+        "UEBA/versions.tf": "8405f437d05248d5e3a038469f2f54dc490a5f7f3396996347730e4659c79116"
+      }
+    },
+    "processing_container.zip": {
+      "sha256": "c8b9f668a05fcd6d48c049aa4b1fcf490e03d3de5a06cdc1c4446c638c71daef",
+      "files": {
+        "processing_container/Dockerfile": "6fbc16d14fa75737aae2332165a6789faad293141de90156993bde50a9507515",
+        "processing_container/processing/d2v.py": "c1403de79eb59a958393ab22fbefe6956e2b2c52677a91f308ce0d228c6333e7",
+        "processing_container/processing/dbscan_auto.py": "94bd59a11ebbfd1c8c5916a176c743b0c5058eba781e62f12b01bbebad689783",
+        "processing_container/processing/io_util.py": "44cc90a659a834487979a120778d788d552b7f6df28ad5a1a92c0ee0c40d5c4d",
+        "processing_container/processing/main.py": "4a7d6d9ed2fc66457b7bc7a10cb07e239f8e19231033d29153acadad62e20e30",
+        "processing_container/processing/ocsvm.py": "8da2c0539ee4c997a474b870f4eebed8733594c3551ffa754cae7d9badff84e9",
+        "processing_container/processing/preprocess.py": "f4c1847b6c2ec8cc42bf0eacd13e44d8359f277f79644e7477b5b9cb567504b5",
+        "processing_container/processing/README.md": "858b8fd22ec3cf3bc4dd29cdf44383a5048df03bb268e5e721c601c96fca1502",
+        "processing_container/processing/utils.py": "893a87d13ec02398c5ced61c27c5099112636a02dfea700584038edd10ff8414",
+        "processing_container/processing_container/Dockerfile": "6e4b513a8286edb38ba6fe95f7b7578bdda018f4817d5cd934d3e090d54d6d96",
+        "processing_container/processing_container/processing/d2v.py": "a6061616cb4e1990775049b07cafbebdd085ab7c69bf38eb775b61d19c04c3cf",
+        "processing_container/processing_container/processing/dbscan_auto.py": "a6061616cb4e1990775049b07cafbebdd085ab7c69bf38eb775b61d19c04c3cf",
+        "processing_container/processing_container/processing/io_util.py": "1dfda14cb3afe50f50f80cf11c492e52a4ea572fb788c37407162de96f336a14",
+        "processing_container/processing_container/processing/main.py": "f67cbe2c52d58fd77172189937b6309814dc8b04bb9d21bcb295c1948c1155b3",
+        "processing_container/processing_container/processing/ocsvm.py": "a6061616cb4e1990775049b07cafbebdd085ab7c69bf38eb775b61d19c04c3cf",
+        "processing_container/processing_container/processing/preprocess.py": "a6061616cb4e1990775049b07cafbebdd085ab7c69bf38eb775b61d19c04c3cf",
+        "processing_container/processing_container/processing/utils.py": "ee8d7b69649b8d8cdfb46b0d29619a1c8d33649d3e63ef21e8f76f04dfeffb49",
+        "processing_container/processing_container/requirements.txt": "7b79cd08bf42b2924ec86ac8756f75a58b5159ed3a6502639c64aef6640a5920",
+        "processing_container/requirements.txt": "a4544d8d1afa4dd46b82f540f76a5779602a49378357447d8f4181dc9e521121"
+      }
+    },
+    "realtime_container.zip": {
+      "sha256": "1757a9c0b566c364bb99440300f26d57f1d60a1267c5d41276f7f641e317186e",
+      "files": {
+        "realtime_container/Dockerfile": "4516f1ebbff1a336b4cddfadaed18f288fa75442ddfa1ec436daa6cda85bfbc5",
+        "realtime_container/lambda_realtime_handler.py": "9fe564e51c3d00d5adb9c565d5fb17ec878ddd34eb7f699f3530ace1bf8ff184",
+        "realtime_container/requirements.txt": "53f16ee112fb3785e6c3623d34d140672218c81bd3361e8e81fd31eb062d9797"
+      }
+    }
+  }
+}

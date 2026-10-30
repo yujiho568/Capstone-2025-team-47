@@ -1,0 +1,14 @@
+{
+  "trained": {
+    "status": "trained",
+    "count": 120,
+    "windows": 82,
+    "version": "container-smoke-final"
+  },
+  "production_minimum": {
+    "status": "skipped",
+    "count": 120,
+    "minimum": 3000,
+    "version": "production-minimum-check"
+  }
+}

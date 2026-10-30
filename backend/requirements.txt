@@ -1,0 +1,16 @@
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+sqlalchemy==2.0.23
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
+python-jose[cryptography]==3.5.0
+python-dotenv==1.0.0
+pydantic==2.7.4
+pydantic-settings==2.2.1
+requests==2.31.0
+typing-extensions>=4.11,<5
+# psycopg2-binary  # Commented out due to build issues on macOS
+email-validator
+python-multipart
+# psycopg2  # Commented out - using SQLite instead
+boto3
